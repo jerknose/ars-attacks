@@ -1,0 +1,174 @@
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <title>ARs Attacks!</title>
+  <script src="https://aframe.io/releases/0.8.2/aframe.min.js"></script>
+  <script src="https://unpkg.com/networked-aframe/dist/networked-aframe.min.js"></script>
+  <script src="https://unpkg.com/aframe-randomizer-components@^3.0.1/dist/aframe-randomizer-components.min.js"></script>
+  <script src="//cdn.rawgit.com/donmccurdy/aframe-physics-system/v3.2.0/dist/aframe-physics-system.min.js"></script>
+  <script src="https://unpkg.com/aframe-physics-extras/dist/aframe-physics-extras.min.js"></script>
+  <script src="https://rawgit.com/feiss/aframe-environment-component/master/dist/aframe-environment-component.min.js"></script>
+  <script src="https://unpkg.com/aframe-animation-component@^4.1.2/dist/aframe-animation-component.min.js"></script>
+  <script src="https://rawgit.com/mayognaise/aframe-gif-shader/master/dist/aframe-gif-shader.min.js"></script>
+  <script src="https://rawgit.com/mayognaise/aframe-gif-component/master/dist/aframe-gif-component.min.js"></script>
+  <script src="js/aframe-state-component.js"></script>
+  <script src="/js/spawn-in-circle.component.js"></script>
+  <script src="/js/game-state.js"></script>
+  <script src="./js/projectile.js"></script>
+  <script src="./js/shooter.js"></script>
+  <script src="./js/target.js"></script>
+  <script src="./js/oculus-go-controls.js"></script>
+  <script src="/js/html-imports.min.js"></script>
+  <script src="/js/hud.component.js"></script>
+  <script src="/js/lobby.component.js"></script>
+  <script src="/js/death.js"></script>
+  <script src="/js/animation-mixer.js"></script>
+  <script src="/js/add-shape-later.js"></script>
+  <link rel="import" href="templates.html">
+</head>
+
+<body>
+  <!-- Anchor / Column. -->
+  <script>
+    AFRAME.registerComponent('thing', {
+      init: function () {
+        this.el.setAttribute('geometry', {primitive:'box', width:0.01, depth:0.01, height:1});
+        this.el.setAttribute('position', {y:0.5});
+      }
+    });            
+  </script>
+  <script>
+    /////////////////////////////////////////////////////////////////////////////////////////
+    // NOTE: for A-Frame 0.8.x, we need to listen for cursor intersection changes separately
+    //        
+      AFRAME.registerComponent('track-cursor-intersection', {
+        init: function () {
+          this.point = new THREE.Vector3();
+        },
+        
+        tick: function (t, dt) {
+          // NOTE: not throttled to raycaster checkIntersections interval!
+          var cursor = this.el.components.cursor;
+          var raycaster = this.el.components.raycaster;
+          var newIntersection;
+          // NOTE: A-Frame 0.7.1 (which doesn't need this) does not have raycaster.intersections
+          if (cursor && raycaster && raycaster.intersections) {
+            newIntersection = raycaster.intersections.length ? raycaster.intersections[0] : undefined;
+            // NOTE: the intersections are always different (!) so check object
+            if ((cursor.intersection && cursor.intersection.object) !== (newIntersection && newIntersection.object)) {
+              // new cursor intersection object
+              cursor.intersection = newIntersection;              
+              this.el.emit('cursor-intersection-changed', cursor.intersection, false);
+            } else
+            if (newIntersection && !newIntersection.point.equals(cursor.intersection.point)) {
+              // new cursor intersection point
+              cursor.intersection.point.copy(newIntersection.point);
+              this.el.emit('cursor-intersection-changed', newIntersection, false);
+            } else {
+              // same or no cursor intersection point
+            }
+          }
+        }
+      });            
+    //
+    /////////////////////////////////////////////////////////////////////////////////////////
+  </script> 
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/1.4.5/socket.io.min.js"></script>
+  <script src="/easyrtc/easyrtc.js"></script>
+  <a-scene networked-scene="
+      room: dev;
+      debug: true;
+      adapter: wseasyrtc;
+     "
+    environment="
+      preset:yavapai; lightPosition: 0 1 0.8; groundColor: #ffecbe;
+      groundColor2: #ffa27a; horizonColor: #51b5df; skyColor: #091b39;
+      dressingColor: #ffecbe; playArea: 1.2"
+    physics="gravity: 0">
+    <a-assets>
+      <a-mixin id="projectile-mixin" geometry="primitive: sphere; radius: 0.05" scale="0.5 0.5 10">
+      </a-mixin>
+      <a-asset-item id="alien" src="/assets/ackack-alien-crazy-eyes/scene.gltf"></a-asset-item>
+      <a-asset-item id="ufo" src="/assets/low-poly-ufo/scene.gltf"></a-asset-item>
+      <a-asset-item id="base" src="/assets/base/scene.gltf"></a-asset-item>
+      <a-asset-item id="head" src="/assets/man-bust/scene.gltf"></a-asset-item>
+      <a-asset-item id="left-hand-shield" src="/assets/left-hand-shield/scene.gltf"></a-asset-item>
+      <a-asset-item id="right-hand-blaster" src="/assets/right-hand-blaster/scene.gltf"></a-asset-item> 
+      <img id="smoke-texture" src="./images/smoke-texture.png" />
+      <img id="hex-texture" src="./images/hex-texture.png" />
+      <img id="youdie-texture" src="./images/youdie.png" />
+
+      <img id="waitfortemplates" />
+    </a-assets>
+    <!-- <a-entity gltf-model="#alien" position="0 -2 -1" scale="0.25 0.25 0.25"></a-entity>
+    <a-entity gltf-model="#ufo" scale="0.05 0.05 0.05"></a-entity> -->
+    <a-entity gltf-model="#base" scale="5 5 5"></a-entity>
+    <a-entity id="cameraRig" networked="template:#cameraRig-template; attachTemplateToLocal: false"
+      position rotation
+      spawn-in-circle="radius:7.5">
+      <a-entity id="player" networked="template:#avatar-template;attachTemplateToLocal:false;"
+        camera
+        position="0 1.6 0"
+        wasd-controls look-controls
+        target
+        lobby
+        death bind__death="active: dead"
+        bind__hud="currentLife: life"
+        static-body="shape: none;"
+        add-shape-later="shape: cylinder; radiusTop: 0.17; radiusBottom: 0.17; height: 0.55; offset: 0 -0.5 0"
+        physics-collider="ignoreSleep: true"
+        collision-filter="group: you; collidesWith: projectiles, alienBullets, humanBullets; collisionForces: false">
+        <a-entity gltf-model="#head" visible="false" scale="0.1 0.1 0.1" position="0 -1 0"></a-entity>
+      </a-entity>
+      <a-entity class="right-controller"
+        shooter="team: human; enableMouse: false; enableTouch: false; direction: 0 -0.97 -0.243"
+        bind="shooter.active: gunsEnabled"
+        position rotation
+        networked="template:#right-hand-template; attachTemplateToLocal: true"
+        daydream-controls="hand: right; model: false"
+        gearvr-controls="hand: right; model: false"
+        oculus-touch-controls="hand: right; model: false"
+        vive-controls="hand: right; model: false"
+        windows-motion-controls="hand: right; model: false"
+        oculus-go-controls="hand: right; model: false">
+      </a-entity>
+      <a-entity class="left-controller"
+        position rotation
+        networked="template:#left-hand-template;attachTemplateToLocal: true"
+        oculus-touch-controls="hand: left; model: false"
+        vive-controls="hand: left; model: false"
+        windows-motion-controls="hand: left; model: false">
+      </a-entity>
+    </a-entity>
+
+    <a-entity position="0 0 0" geometry="primitive: plane; width: 10000; height: 10000;" rotation="-90 0 0" material="visible:false"
+      static-body collision-filter="collidesWith: projectiles, alienBullets, humanBullets"></a-entity>
+
+    <a-sky src="#sky" rotation="0 -90 0"></a-sky>
+  </a-scene>
+  <script src="js/naf-templates-schemas.js"></script>
+  <script>
+    // Called by Networked-Aframe when connected to server
+    function onConnect() {
+      console.log("onConnect", new Date());
+    }
+
+    function increasePointsExample() {
+      AFRAME.scenes[0].emit('increaseScore', { points: 50 });
+    }
+  </script>
+  <audio id="bgAudio" autoplay loop>
+    <source src="/sounds/background_music2.mp3" type="audio/mpeg">
+  </audio>
+  <script>
+    document.addEventListener("DOMContentLoaded", function(event) { 
+      document.getElementById("bgAudio").volume = 0.25;
+    });
+  </script>
+  <audio id="peace">
+      <source src="/sounds/wecomeinpeace.wav" type="audio/wav">
+  </audio>
+ </body>
+
+</html>

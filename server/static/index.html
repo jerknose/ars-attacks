@@ -1,0 +1,147 @@
+<html>
+<head>
+  <link href="https://fonts.googleapis.com/css?family=Roboto+Mono" rel="stylesheet">
+  <script src='https://cdnjs.cloudflare.com/ajax/libs/three.js/94/three.min.js'></script>
+  <script src='https://cdn.jsdelivr.net/npm/three.ar.js@latest/dist/three.ar.js'></script>
+  <script src='https://code.jquery.com/jquery-3.3.1.min.js'></script>
+  <script src='js/device.js'></script>
+  <script>
+    var arDisplay = false;
+    var vrDisplay = false;
+    var ready = {
+      arDetect: false,
+      vrDetect: false
+    }
+
+    if (navigator.getVRDisplays) {
+      navigator.getVRDisplays().then(function (displays) {
+        vrDisplay = displays.length && displays[0];
+        ready.vrDetect = true;
+        checkReady()
+      });
+    } else {
+      ready.vrDetect = true;
+      checkReady()
+    }
+    
+    THREE.ARUtils.getARDisplay().then(function (display) { 
+      arDisplay = display;
+      if (!arDisplay) {
+        // Check if the low-level WebXR Viewer interfaces are there.
+        if (window.webkit && window.webkit.messageHandlers) { 
+          if (window.webkit.messageHandlers.watchAR) { 
+              // Mozilla WebXR Viewer detected.
+              arDisplay = true;
+           }
+        }  
+      }
+      ready.arDetect = true;
+      checkReady()
+    })
+
+    function checkReady() {
+      if (ready.arDetect && ready.vrDetect) {
+        if (arDisplay) {
+          $(document).ready(function(){
+            $("#arButton").removeAttr("disabled");
+          });
+        } else if (vrDisplay) {
+          $(document).ready(function(){
+            $("#vrButton").removeAttr("disabled");
+          });
+        } else {
+        }
+      }
+    }
+  </script>
+  <style>
+    body {
+      background: url('/images/ARs_background.png');
+      background-size: cover;
+      background-color: #000;
+      font-family: 'Roboto Mono', monospace;
+    }
+    #startScreen {
+      width: 100%;
+      height: 100%;
+      position: absolute;
+      text-align: center;
+    }
+
+    #startScreenOverlay {
+      width: 400px;
+      height: auto;
+      margin: 50px auto 50px auto;
+      padding: 0;
+      font-size: 25px;
+    }
+
+    #startScreen ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    #startScreen h2 {
+      margin: 0 0;
+      color: #fff;
+    }
+
+    #startScreen a, #startScreen a:visited {
+      color: #d80a00;
+    }
+
+    #githubLink {
+      padding-top:25px;
+      display: block;
+    }
+
+    #vrButton, #arButton, #twoDButton {
+      font-size: 20px;
+      margin-top: 25px;
+      color: #d80a00;
+      background: none;
+      border-radius: 10px;
+      padding: 10px 20px;
+      cursor: pointer;
+      border-color: #d80a00;
+    }
+
+    #vrButton:disabled, #arButton:disabled, #twoDButton:disabled {
+      color: #333;
+      border-color: #333;
+      cursor: default;
+    }
+
+    #arInfo, #vrInfo, #twoDInfo {
+      font-size: 14px;
+      color: #FFF;
+    }
+  </style> 
+</head>
+<body>
+    <div id="startScreen">
+        <div id="startScreenOverlay">
+          <ul>
+            <li><img src="/images/ARsAttacks_logo.png" style="width:80%;height:auto;"></li>
+            <li><h2>An Interplanetary WebXR Adventure!</h2></li>
+            <li><button id="arButton" disabled="disabled" onclick="window.location.href = 'index-ar.html'">Aliens (WebAR)</button></li>
+            <li><p id="arInfo">Download the WebXR Viewer App - <a href="https://itunes.apple.com/us/app/webxr-viewer/id1295998056?mt=8" target="_blank">iOS</a> | <a href="https://github.com/google-ar/WebARonARCore" target="_blank">Android</a><br/>( Must have an ARKit or ARCore compatible device )</p></li>
+            <li><button id="vrButton" disabled="disabled" onclick="window.location.href = 'index-vr.html'">Humans (WebVR)</button></li>
+            <li><p id="vrInfo">Works best with Rift, Vive, WindowsMR 6dof HMD</p></li>
+            <li><button id="twoDButton" onclick="window.location.href = 'index-desktop.html'">Drones (2D)</button></li>
+            <li><p id="twoDInfo">Works great Mobile Safari or Chrome!</p></li>
+            <li><a id="githubLink" href="https://github.com/quinn-madson/ars-attacks" target="_blank">Source available on Github</a></li>
+          </ul>
+        </div>
+      </div>
+      <audio id="bgAudio" autoplay loop>
+        <source src="/sounds/background_music2.mp3" type="audio/mpeg">
+      </audio>
+      <script>
+        document.addEventListener("DOMContentLoaded", function(event) { 
+          document.getElementById("bgAudio").volume = 0.25;
+        });
+      </script>
+</body>
+</html>

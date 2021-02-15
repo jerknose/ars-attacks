@@ -1,0 +1,82 @@
+<!-- Avatar -->
+<template id="avatar-template" scale="1 1 1">
+  <a-entity class="avatar" scale="1 1 1">
+    <a-entity gltf-model="#head" scale="0.1 0.1 0.1" position="0 -1 0" rotation="0 180 0"></a-entity>
+  </a-entity>
+</template>
+<template id="human-projectile-template">
+  <a-entity class="projectile" mixin="projectile-mixin"
+            material="color: green;"
+            collision-filter="group: alienBullets; collidesWith: you, default"
+            static-body="shape: none"
+            shape="shape: box; halfExtents: 0.05 0.05 0.05">
+  </a-entity>
+</template>
+<template id="alien-projectile-template">
+  <a-entity class="projectile" mixin="projectile-mixin"
+            collision-filter="group: humanBullets; collidesWith: you, default"
+            material="color: red;"
+            static-body="shape: none"
+            shape="shape: box; halfExtents: 0.05 0.05 0.05">
+  </a-entity>
+</template>
+<template id="ar-template">
+  <a-entity position="0 10 0" scale="5 5 5">
+      <a-entity class="avatar" scale="1 1 1" position="0 0 0" rotation="0 180 0">
+        <a-entity gltf-model="#alien" position="0 -0.7 0" scale="0.125 0.125 0.125" rotation="0 180 0" animation-mixer></a-entity>
+        <a-entity gltf-model="#ufo" position="0 -1 0" scale="0.025 0.025 0.025" rotation="0 0 0"></a-entity>
+      </a-entity>    
+  </a-entity>
+</template>
+<template id="right-hand-template">
+  <a-entity>
+    <a-entity gltf-model="#right-hand-blaster"
+              position="-0.042 0.223 0.148"
+              scale="0.11 0.11 0.11"
+              rotation="74.4 -179.3 -6.44"></a-entity>
+  </a-entity>
+</template>
+<template id="left-hand-template">
+  <a-entity>
+      <a-entity gltf-model="#left-hand-shield"
+                position="0.07 0.004 0.115"
+                rotation="79.5 -72.2 81.5"
+                scale="0.11 0.11 0.11"
+                static-body="shape: none"
+                add-shape-later="shape: cylinder; radiusTop: 1.85; radiusBottom: 1.85; height: 2; offset: 0.194 1.257 -0.131; orientation: 0.245 -0.278 -0.647 0.665"
+                collision-filter="collidesWith: alienBullets, humanBullets">
+              </a-entity>
+    </a-entity>
+  </a-entity>
+</template>
+<template id="cameraRig-template">
+  <a-entity position rotation></a-entity>
+</template>
+<template id="desktop-template">
+  <a-entity position rotation></a-entity>
+</template>
+<template id="shield-dome-template">
+  <a-entity dome geometry="primitive: sphere; radius: 3"
+            position rotation
+            material="src: #hex-texture; transparent: true; side: double"
+            static-body
+            collision-filter="collidesWith: alienBullets">
+  </a-entity>
+</template>
+<template id="smoke-dome-template">
+  <a-entity dome geometry="primitive: sphere; radius: 10"
+            position rotation scale
+            material="transparent: true; opacity: 1; src: #smoke-texture; side: back; roughness: 1"
+            animation__scale="property: scale; from: 1 1 1; to: 1.5 1.5 1.5; dur: 10000"
+            animation__opacity="property: material.opacity; from: 1; to: 0; delay: 1000; dur: 9000">
+    <a-entity geometry="primitive: sphere; radius: 10"
+              material="transparent: true; opacity: 0.5; src: #smoke-texture; side: front; roughness: 1"
+              animation__opacity="property: material.opacity; from: 0.5; to: 0; dur: 10000"></a-entity>
+  </a-entity>
+</template>
+<template id="dead-player-template">
+  <a-entity geometry="primitive: sphere; radius: 0.75"
+            material="color: red; transparent: true; opacity: 0; side: double"
+            animation__fadein="property: material.opacity; from: 0; to: 0.8; dur: 2000">
+  </a-entity>
+</template>

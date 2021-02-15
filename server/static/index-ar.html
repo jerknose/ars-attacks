@@ -1,0 +1,414 @@
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <title>ARs Attacks!</title>
+  <link href="https://fonts.googleapis.com/css?family=Roboto+Mono" rel="stylesheet">
+  <script src="https://aframe.io/releases/0.8.2/aframe.min.js"></script>
+  <script src="https://unpkg.com/networked-aframe/dist/networked-aframe.min.js"></script>
+  <script src="https://unpkg.com/aframe-randomizer-components@^3.0.1/dist/aframe-randomizer-components.min.js"></script>
+  <script src="//cdn.rawgit.com/donmccurdy/aframe-physics-system/v3.2.0/dist/aframe-physics-system.min.js"></script>
+  <script src="https://unpkg.com/aframe-physics-extras/dist/aframe-physics-extras.min.js"></script>
+  <script src="https://rawgit.com/mayognaise/aframe-gif-shader/master/dist/aframe-gif-shader.min.js"></script>
+  <script src="https://rawgit.com/mayognaise/aframe-gif-component/master/dist/aframe-gif-component.min.js"></script>
+  <script src="https://rawgit.com/feiss/aframe-environment-component/master/dist/aframe-environment-component.min.js"></script>
+  <script src="https://unpkg.com/aframe-animation-component@^4.1.2/dist/aframe-animation-component.min.js"></script>
+  <script src="//cdn.rawgit.com/donmccurdy/aframe-extras/v4.1.2/dist/aframe-extras.min.js"></script>
+  <script src="js/aframe-state-component.js"></script>
+  <script src="./js/three.ar.js"></script>
+  <script src="./js/aframe-ar.js"></script>
+  <script src="/js/spawn-in-circle.component.js"></script>
+  <script src="/js/grid-shader.js"></script>
+
+  <!-- Include polygon component. -->
+  <script src="/js/polygon.js"></script>
+        
+  <style>
+    /* Prevent touch causing flicker on iOS. */
+    * { -webkit-tap-highlight-color: rgba(0,0,0,0); }
+    
+    #arInstructions {
+      width: 100%;
+      height: 100%;
+      position: absolute;
+      text-align: center;
+      background-color: rgba(0, 0, 0, 0.6);
+      font-family: 'Roboto Mono', monospace;
+    }
+
+    #arInstOverlay {
+      width: 400px;
+      height: auto;
+      margin-right: auto;
+      margin-left: auto;
+      border-radius: 25px;
+      padding: 25px;
+      font-size: 18px;
+      margin-top: 100px;
+      color: white;
+      /* border: 1px solid #fff; */
+    }
+
+    #arInstOverlay h3 {
+      font-size:22px;
+    }
+
+    #arInstructions ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    #arInstructions ul button {
+      font-size: 20px;
+      margin-top: 25px;
+    }
+
+    #fireButton {
+      width: 100%;
+      height: 100%;
+      position: absolute;
+      text-align: center;
+      display: none;
+    }
+
+    #fireButtonOverlay {
+      width: auto;
+      height: 100%;
+      margin-right: auto;
+      margin-left: auto;
+    }
+
+    #fireButton button {
+      bottom: 100px;
+      position: absolute;
+      margin-left: -45px;
+    }
+
+    #fireButton button {
+      background-color: red;
+    }
+  </style> 
+  <script src="/js/game-state.js"></script>
+  <script src="./js/projectile.js"></script>
+  <script src="./js/shooter.js"></script>
+  <script src="./js/target.js"></script>
+  <script src="./js/oculus-go-controls.js"></script>
+  <script src="/js/html-imports.min.js"></script>
+  <script src="/js/hud.component.js"></script>
+  <script src="/js/lobby.component.js"></script>
+  <script src="/js/death.js"></script>
+  <script src="/js/add-shape-later.js"></script>
+
+
+  <link rel="import" href="templates.html">
+</head>
+
+<body>
+  <!-- Anchor / Column. -->
+  <script>
+    /////////////////////////////////////////////////////////////////////////////////////////
+    // NOTE: for A-Frame 0.8.x, we need to listen for cursor intersection changes separately
+    //        
+      AFRAME.registerComponent('track-cursor-intersection', {
+        init: function () {
+          this.point = new THREE.Vector3();
+        },
+        
+        tick: function (t, dt) {
+          // NOTE: not throttled to raycaster checkIntersections interval!
+          var cursor = this.el.components.cursor;
+          var raycaster = this.el.components.raycaster;
+          var newIntersection;
+          // NOTE: A-Frame 0.7.1 (which doesn't need this) does not have raycaster.intersections
+          if (cursor && raycaster && raycaster.intersections) {
+            newIntersection = raycaster.intersections.length ? raycaster.intersections[0] : undefined;
+            // NOTE: the intersections are always different (!) so check object
+            if ((cursor.intersection && cursor.intersection.object) !== (newIntersection && newIntersection.object)) {
+              // new cursor intersection object
+              cursor.intersection = newIntersection;              
+              this.el.emit('cursor-intersection-changed', cursor.intersection, false);
+            } else
+            if (newIntersection && !newIntersection.point.equals(cursor.intersection.point)) {
+              // new cursor intersection point
+              cursor.intersection.point.copy(newIntersection.point);
+              this.el.emit('cursor-intersection-changed', newIntersection, false);
+            } else {
+              // same or no cursor intersection point
+            }
+          }
+        }
+      });            
+    //
+    /////////////////////////////////////////////////////////////////////////////////////////
+  </script> 
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/1.4.5/socket.io.min.js"></script>
+  <script src="/easyrtc/easyrtc.js"></script>
+  <script src="/js/planes-example.js"></script>   
+  <a-scene ar networked-scene="
+      room: dev;
+      debug: true;
+      adapter: wseasyrtc;
+     "
+    physics="gravity: 0">
+  
+    <a-assets>
+      <a-mixin id="projectile-mixin" geometry="primitive: sphere; radius: 0.05" scale="0.5 0.5 10"></a-mixin>
+      <a-asset-item id="alien" src="/assets/ackack-alien-crazy-eyes/scene.gltf"></a-asset-item>
+      <a-asset-item id="ufo" src="/assets/low-poly-ufo/scene.gltf"></a-asset-item>
+      <a-asset-item id="base" src="/assets/base/scene.gltf"></a-asset-item>
+      <a-asset-item id="head" src="/assets/man-bust/scene.gltf"></a-asset-item>
+      <img id="smoke-texture" src="./images/smoke-texture.png" />
+      <img id="hex-texture" src="./images/hex-texture.png" />
+      <img id="youdie-texture" src="./images/youdie.png" />
+      <img id="waitfortemplates" />
+    </a-assets>
+
+    <a-entity id="playerHolder" position="0 0 0" scale="1 1 1"
+      networked="template:#ar-template;attachTemplateToLocal:false;">
+      <a-camera id="player" class="avatar"
+        lobby
+        bind__hud="currentLife: life"
+        death bind__death="active: dead"
+        scale="1 1 1" position="0 0 0" rotation="0 0 0"
+        target shooter="team: alien; enableTouch:false; enableMouse:false;"
+        bind="shooter.active: gunsEnabled"
+        static-body="shape: none;" physics-collider="ignoreSleep: true"
+        add-shape-later__head="shape: sphere; radius: 3; offset: 0 0.4 0"
+        add-shape-later__saucer="shape: cylinder; radiusTop: 4.3; radiusBottom: 4.3; height: 2.1; offset: 0 -0.46 0"
+        collision-filter="group: you; collidesWith: projectiles, alienBullets, humanBullets; collisionForces: false">
+        
+        <a-entity visible="false" gltf-model="#alien" position="0 -0.7 0" scale="0.125 0.125 0.125" rotation="0 180 0" animation-mixer></a-entity>
+        <a-entity visible="false" gltf-model="#ufo" position="0 -1 0" scale="0.025 0.025 0.025" rotation="0 0 0"></a-entity>
+
+        <a-entity >
+          <!-- When we have a raycaster hit, we use this ball to show where. -->
+          <a-sphere id="ball" radius="0.01" position="0 0.005 -0.5"></a-sphere>
+          <!-- A hit from AR, rather than A-Frame objects, hits this entity. -->
+          
+          <a-entity id="ar-world"></a-entity>
+              
+          <!-- Declare a cursor, and what objects its raycaster hit (including AR). -->
+          <!-- NOTE: ar-raycaster VRHit uses a "tolerance" fudge factor, so imprecise -->
+          <a-entity cursor="fuse:false" track-cursor-intersection
+                    raycaster="objects:.plane;recursive:false" 
+                    ar-raycaster="el:#ar-world"></a-entity>
+          
+          <!-- Separate the cursor appearance.-->
+          <a-entity position="0 0 -0.1"
+                    scale="0.002 0.002 0.002"
+                    geometry="primitive: ring; radiusInner: 1; radiusOuter: 1.25" 
+                    material="color: black; shader: flat; transparent:true"></a-entity>
+        </a-entity>
+        <!-- Heads-up text display. -->
+        <!-- <a-text id="hud"
+          scale="0.01 0.01 0.01" position="0 -0.025 -0.1" 
+          color="yellow" align="center" 
+          value="Hi there"></a-text> -->
+      </a-camera>
+    </a-entity>
+
+    <a-entity id="sceneGroup" visible="false">
+      <!-- <a-entity gltf-model="#alien" position="0 -2 -1" scale="0.25 0.25 0.25"></a-entity>
+      <a-entity gltf-model="#ufo" scale="0.05 0.05 0.05"></a-entity> -->
+      <a-entity id="base" gltf-model="#base" scale="5 5 5"></a-entity>
+      <!-- <a-entity gltf-model="#man-in-black"></a-entity> -->
+
+      <a-entity text="side: double; width: 10; wrapCount: 20;" position="3.2 3 -5.14" bind__text="value: life;"></a-entity>
+
+      <a-entity environment="preset:yavapai; lightPosition: 0 1 0.8; groundColor: #c7a688;
+      groundColor2: #c78266; horizonColor: #51b5df; skyColor: #091b39;
+      dressingColor: #ffecbe; playArea: 1.2; lighting: none;" id="environment"></a-entity>
+
+      <a-entity light="color: #ccccff; intensity: 1; type: ambient;" visible=""></a-entity>
+      <a-entity light="color: #ffaaff; intensity: 1.5" position="5 5 5"></a-entity>
+    </a-entity>
+    <div id="arInstructions">
+      <div id="arInstOverlay">
+        <ul>
+          <li><h3>How to configure AR scene...</h3></li>
+          <li>1. Find a clear, well lit surface.</li>
+          <li>2. Scan area until grid appears.</li>
+          <li>3. Tap grid to start game.</li>
+          <li><button>Got it!</button></li>
+        </ul>
+      </div>
+    </div>
+    <div id="fireButton">
+        <div id="fireButtonOverlay">
+          <button>Fire!</button>
+        </div>
+      </div>
+  </a-scene>
+  <script src="js/naf-templates-schemas.js"></script>
+  <script>
+    // Called by Networked-Aframe when connected to server
+    function onConnect() {
+      console.log("onConnect", new Date());
+    }
+
+    function increasePointsExample() {
+      AFRAME.scenes[0].emit('increaseScore', { points: 50 });
+    }
+  </script>
+  <script>
+      var sc = document.querySelector('a-scene');
+      var ball = document.querySelector('#ball');
+      // function showHUD(msg) { sc.querySelector('#hud').setAttribute('value', msg); }
+      
+      function addARRaycasterListeners() {
+        var raycaster = sc.querySelector('[ar-raycaster]');
+        // Note, -intersection is what the raycaster gets; the hit object gets -intersected.
+        raycaster.addEventListener('raycaster-intersection', function (evt) {
+          // Use first hit (which should be nearest).
+          var point = evt.detail.intersections[0].point;
+          var distance = evt.detail.intersections[0].distance;
+          var el = evt.detail.els[0];
+          // showHUD('raycaster-intersection ' + distance + '\n' + JSON.stringify(point) + '\n' + el.id /*el.outerHTML*/);
+          if (el.getAttribute('class') === 'plane') { el.setAttribute('opacity', 1.0); }
+          ball.setAttribute('position', point);
+          ball.setAttribute('visible', true);
+        });
+        raycaster.addEventListener('raycaster-intersection-cleared', function (evt) {
+///////////////////////////////////////////////////////////////////////////////////
+// NOTE: for A-Frame 0.8.x, only one event with all cleared elements in clearedEls
+//          
+          var el = evt.detail.el || evt.detail.clearedEls[0];
+//          
+///////////////////////////////////////////////////////////////////////////////////
+          // showHUD('raycaster-intersection-cleared\n' + el.outerHTML);
+          if (el.getAttribute('class') === 'plane') { el.setAttribute('opacity', 0.5); }
+          ball.setAttribute('visible', false);
+        });
+/////////////////////////////////////////////////////////////////////////////////////////
+// NOTE: for A-Frame 0.8.x, we need to listen for cursor intersection changes separately
+//        
+        raycaster.addEventListener('cursor-intersection-changed', function (evt) {
+          if (evt.detail) {
+            // Use provided hit.
+            var point = evt.detail.point;
+            var distance = evt.detail.distance;
+            var el = evt.detail.object.el;
+            // showHUD('cursor-intersection-changed ' + distance + '\n' + JSON.stringify(point) + '\n' + el.id /*el.outerHTML*/);
+            if (el.getAttribute('class') === 'plane') { el.setAttribute('opacity', 1.0); }
+            ball.setAttribute('position', point);
+            ball.setAttribute('visible', true);
+          }
+        });
+//
+/////////////////////////////////////////////////////////////////////////////////////////
+      }
+      
+      function addEventListeners() {
+        addARRaycasterListeners();
+        addPlaneListeners();
+      }     
+      
+      function scenePosition(pos) {
+        document.querySelector('#sceneGroup').setAttribute('position', pos);
+      }
+
+      function sceneVisible(boo) {
+        if (boo) {
+          document.querySelector('#playerHolder').setAttribute('position', {x:0, y:10, z: 0});
+          document.querySelector('#playerHolder').setAttribute('scale', {x:5, y:5, z: 5});
+          // document.querySelector('.plane').setAttribute('visible', false);
+        } else {
+          document.querySelector('#playerHolder').setAttribute('position', {x:0, y:0, z: 0});
+          document.querySelector('#playerHolder').setAttribute('scale', {x:1, y:1, z: 1});
+          // document.querySelector('.plane').setAttribute('visible', true);
+        }
+
+        document.querySelector('#sceneGroup').setAttribute('visible', boo);
+        document.querySelector('.avatar').setAttribute('visible', boo);
+        document.querySelector('#player').setAttribute('visible', boo);
+        // document.querySelector('.head').setAttribute('visible', boo);
+      }
+
+      function hideInstructions() {
+        document.getElementById('arInstructions').style.display = 'none';
+      }
+
+      function onSceneLoaded() { 
+        var tempPos = new THREE.Vector3();
+        var tempQuat = new THREE.Quaternion();
+        var tempScale = new THREE.Vector3();
+        var tempEuler = new THREE.Euler(0, 0, 0, 'YXZ');
+        var tempMat4 = new THREE.Matrix4();
+
+        document.querySelector('a-sky').setAttribute('visible', false);
+        sceneVisible(false);
+        
+/////////////////////////////////////////////////////////////////////////////////////////
+// NOTE: first surprise with master, we never get window click anymore? worked around.
+// NOTE: second surprise with master, we have no cursor intersection... fixed!
+//        
+        document.addEventListener('touchstart'/*'click'*/, function() {
+//          
+/////////////////////////////////////////////////////////////////////////////////////////
+          hideInstructions();
+          // If the cursor has an intersection, place a marker.
+          var cursor = sc.querySelector('[ar-raycaster]').components.cursor;
+          if (cursor.intersection) {
+            sceneVisible(true);
+            scenePosition(cursor.intersection.point);
+
+            document.getElementById("fireButton").attributes.display = "block";
+
+            document.removeEventListener('touchstart', this);
+            document.addEventListener('mousedown', document.querySelector('#player').components.shooter.shoot)
+            document.addEventListener('touchstart', document.querySelector('#player').components.shooter.shoot)
+
+          }
+          
+          // Show plane info on click.
+          // (may not have arDisplay until tick after loaded)
+          var ardisplay = sc.components['three-ar'].arDisplay;
+          if (!ardisplay) { /*showHUD('no ardisplay?');*/ } else {
+            // Old versions of WebARonARKit don't expose getPlanes() correctly.
+            var planes = ardisplay.getPlanes ? ardisplay.getPlanes() : ardisplay.anchors_;
+
+            var keys = Object.keys(sc.components['ar-planes'].planes);
+            var msg = planes.length + ' (vs. ' + keys.length + ': ' + keys.join(',') + ')\n\n';
+/*           
+            planes.forEach(function (plane) {
+              // Decompose into pos / quat / scale, and make euler.
+              tempMat4.fromArray(plane.modelMatrix);
+              tempMat4.decompose(tempPos, tempQuat, tempScale);
+              tempEuler.setFromQuaternion(tempQuat);
+
+              // Write out what we got, for debugging.
+              msg += 
+              'identifier: ' + plane.identifier + '' + // string, per latest spec
+              ' ' + JSON.stringify(tempPos) + ''
+              ' ' + JSON.stringify(tempEuler.toVector3().multiplyScalar(THREE.Math.RAD2DEG)) + '' + 
+              ' ' + plane.extent + '\n' + // number[2], per latest spec
+              (plane.vertices ? ('vertices: ' + plane.vertices.length + '\n') : '') + // number[3*n], per latest spec
+              '';
+            });
+*/            
+            // showHUD(msg);
+          }
+        });
+        
+        addEventListeners();
+      }
+      
+      if (sc.hasLoaded) { onSceneLoaded(); }
+      else { sc.addEventListener('loaded', onSceneLoaded); }
+    </script>
+
+    <audio id="bgAudio" autoplay loop>
+      <source src="/sounds/background_music2.mp3" type="audio/mpeg">
+    </audio>
+    <script>
+        document.addEventListener("DOMContentLoaded", function(event) { 
+          document.getElementById("bgAudio").volume = 0.25;
+        });
+      </script>
+    <audio id="peace">
+        <source src="/sounds/wecomeinpeace.wav" type="audio/wav">
+    </audio>
+ </body>
+
+</html>
