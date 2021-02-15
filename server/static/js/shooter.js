@@ -39,7 +39,7 @@ window.AFRAME.registerComponent('shooter', {
       }
       var countdownSound = document.createElement('audio')
       var countdownSource = document.createElement('source')
-      countdownSource.setAttribute('src', '/sounds/blaster1.wav')
+      countdownSource.setAttribute('src', /blaster1.wav')
       countdownSource.setAttribute('type', 'audio/wav')
       countdownSound.appendChild(countdownSource)
       countdownSound.play()

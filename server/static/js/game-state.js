@@ -16,7 +16,7 @@ AFRAME.registerState({
     decreaseLife: function (state, action) {
       var hitSound = document.createElement('audio')
       var hitSource = document.createElement('source')
-      hitSource.setAttribute('src', '/sounds/hit_sound2.wav')
+      hitSource.setAttribute('src', './sounds/hit_sound2.wav')
       hitSource.setAttribute('type', 'audio/wav')
       hitSound.appendChild(hitSource)
       hitSound.play()

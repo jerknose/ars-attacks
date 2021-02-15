@@ -29,7 +29,7 @@ window.AFRAME.registerComponent('lobby', {
     var countdownSound = document.createElement('audio')
     var countdownSource = document.createElement('source')
     countdownSource.setAttribute('src', './sounds/countdown.wav')
-    countdownSource.setAttribute('type', './audio/wav')
+    countdownSource.setAttribute('type', 'audio/wav')
     countdownSound.appendChild(countdownSource)
     countdownSound.play()
     setTimeout(function(){
