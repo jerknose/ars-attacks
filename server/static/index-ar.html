@@ -17,11 +17,11 @@
   <script src="js/aframe-state-component.js"></script>
   <script src="./js/three.ar.js"></script>
   <script src="./js/aframe-ar.js"></script>
-  <script src="/js/spawn-in-circle.component.js"></script>
-  <script src="/js/grid-shader.js"></script>
+  <script src="./js/spawn-in-circle.component.js"></script>
+  <script src="./js/grid-shader.js"></script>
 
   <!-- Include polygon component. -->
-  <script src="/js/polygon.js"></script>
+  <script src="./js/polygon.js"></script>
         
   <style>
     /* Prevent touch causing flicker on iOS. */
@@ -89,16 +89,16 @@
       background-color: red;
     }
   </style> 
-  <script src="/js/game-state.js"></script>
+  <script src="./js/game-state.js"></script>
   <script src="./js/projectile.js"></script>
   <script src="./js/shooter.js"></script>
   <script src="./js/target.js"></script>
   <script src="./js/oculus-go-controls.js"></script>
-  <script src="/js/html-imports.min.js"></script>
-  <script src="/js/hud.component.js"></script>
-  <script src="/js/lobby.component.js"></script>
-  <script src="/js/death.js"></script>
-  <script src="/js/add-shape-later.js"></script>
+  <script src="./js/html-imports.min.js"></script>
+  <script src="./js/hud.component.js"></script>
+  <script src="./js/lobby.component.js"></script>
+  <script src="./js/death.js"></script>
+  <script src="./js/add-shape-later.js"></script>
 
 
   <link rel="import" href="templates.html">
@@ -143,8 +143,8 @@
     /////////////////////////////////////////////////////////////////////////////////////////
   </script> 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/1.4.5/socket.io.min.js"></script>
-  <script src="/easyrtc/easyrtc.js"></script>
-  <script src="/js/planes-example.js"></script>   
+  <script src="./easyrtc/easyrtc.js"></script>
+  <script src="./js/planes-example.js"></script>   
   <a-scene ar networked-scene="
       room: dev;
       debug: true;
@@ -154,10 +154,10 @@
   
     <a-assets>
       <a-mixin id="projectile-mixin" geometry="primitive: sphere; radius: 0.05" scale="0.5 0.5 10"></a-mixin>
-      <a-asset-item id="alien" src="/assets/ackack-alien-crazy-eyes/scene.gltf"></a-asset-item>
-      <a-asset-item id="ufo" src="/assets/low-poly-ufo/scene.gltf"></a-asset-item>
-      <a-asset-item id="base" src="/assets/base/scene.gltf"></a-asset-item>
-      <a-asset-item id="head" src="/assets/man-bust/scene.gltf"></a-asset-item>
+      <a-asset-item id="alien" src="./assets/ackack-alien-crazy-eyes/scene.gltf"></a-asset-item>
+      <a-asset-item id="ufo" src="./assets/low-poly-ufo/scene.gltf"></a-asset-item>
+      <a-asset-item id="base" src="./assets/base/scene.gltf"></a-asset-item>
+      <a-asset-item id="head" src="./assets/man-bust/scene.gltf"></a-asset-item>
       <img id="smoke-texture" src="./images/smoke-texture.png" />
       <img id="hex-texture" src="./images/hex-texture.png" />
       <img id="youdie-texture" src="./images/youdie.png" />

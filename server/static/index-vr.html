@@ -13,18 +13,18 @@
   <script src="https://rawgit.com/mayognaise/aframe-gif-shader/master/dist/aframe-gif-shader.min.js"></script>
   <script src="https://rawgit.com/mayognaise/aframe-gif-component/master/dist/aframe-gif-component.min.js"></script>
   <script src="js/aframe-state-component.js"></script>
-  <script src="/js/spawn-in-circle.component.js"></script>
-  <script src="/js/game-state.js"></script>
+  <script src="./js/spawn-in-circle.component.js"></script>
+  <script src="./js/game-state.js"></script>
   <script src="./js/projectile.js"></script>
   <script src="./js/shooter.js"></script>
   <script src="./js/target.js"></script>
   <script src="./js/oculus-go-controls.js"></script>
-  <script src="/js/html-imports.min.js"></script>
-  <script src="/js/hud.component.js"></script>
-  <script src="/js/lobby.component.js"></script>
-  <script src="/js/death.js"></script>
-  <script src="/js/animation-mixer.js"></script>
-  <script src="/js/add-shape-later.js"></script>
+  <script src="./js/html-imports.min.js"></script>
+  <script src="./js/hud.component.js"></script>
+  <script src="./js/lobby.component.js"></script>
+  <script src="./js/death.js"></script>
+  <script src="./js/animation-mixer.js"></script>
+  <script src="./js/add-shape-later.js"></script>
   <link rel="import" href="templates.html">
 </head>
 
@@ -75,7 +75,7 @@
     /////////////////////////////////////////////////////////////////////////////////////////
   </script> 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/1.4.5/socket.io.min.js"></script>
-  <script src="/easyrtc/easyrtc.js"></script>
+  <script src="./easyrtc/easyrtc.js"></script>
   <a-scene networked-scene="
       room: dev;
       debug: true;
@@ -89,12 +89,12 @@
     <a-assets>
       <a-mixin id="projectile-mixin" geometry="primitive: sphere; radius: 0.05" scale="0.5 0.5 10">
       </a-mixin>
-      <a-asset-item id="alien" src="/assets/ackack-alien-crazy-eyes/scene.gltf"></a-asset-item>
-      <a-asset-item id="ufo" src="/assets/low-poly-ufo/scene.gltf"></a-asset-item>
-      <a-asset-item id="base" src="/assets/base/scene.gltf"></a-asset-item>
-      <a-asset-item id="head" src="/assets/man-bust/scene.gltf"></a-asset-item>
-      <a-asset-item id="left-hand-shield" src="/assets/left-hand-shield/scene.gltf"></a-asset-item>
-      <a-asset-item id="right-hand-blaster" src="/assets/right-hand-blaster/scene.gltf"></a-asset-item> 
+      <a-asset-item id="alien" src="./assets/ackack-alien-crazy-eyes/scene.gltf"></a-asset-item>
+      <a-asset-item id="ufo" src="./assets/low-poly-ufo/scene.gltf"></a-asset-item>
+      <a-asset-item id="base" src="./assets/base/scene.gltf"></a-asset-item>
+      <a-asset-item id="head" src="./assets/man-bust/scene.gltf"></a-asset-item>
+      <a-asset-item id="left-hand-shield" src="./assets/left-hand-shield/scene.gltf"></a-asset-item>
+      <a-asset-item id="right-hand-blaster" src="./assets/right-hand-blaster/scene.gltf"></a-asset-item> 
       <img id="smoke-texture" src="./images/smoke-texture.png" />
       <img id="hex-texture" src="./images/hex-texture.png" />
       <img id="youdie-texture" src="./images/youdie.png" />
