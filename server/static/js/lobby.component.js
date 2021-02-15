@@ -20,7 +20,7 @@ window.AFRAME.registerComponent('lobby', {
     NAF.connection.unsubscribeToDataChannel('start-game')
     var countdownEl = document.createElement('a-entity')
     countdownEl.setAttribute('geometry', 'primitive:box; height:2; width:2; depth: 2;')
-    countdownEl.setAttribute('material', 'shader:gif;src:url(images/countdown2.gif);')
+    countdownEl.setAttribute('material', 'shader:gif;src:url(./images/countdown2.gif);')
     countdownEl.setAttribute('gif', '')
     countdownEl.setAttribute('position', '0 0.25 -3')
     countdownEl.setAttribute('rotation', '0 45 0')
@@ -28,8 +28,8 @@ window.AFRAME.registerComponent('lobby', {
     var that = this
     var countdownSound = document.createElement('audio')
     var countdownSource = document.createElement('source')
-    countdownSource.setAttribute('src', '/sounds/countdown.wav')
-    countdownSource.setAttribute('type', 'audio/wav')
+    countdownSource.setAttribute('src', './sounds/countdown.wav')
+    countdownSource.setAttribute('type', './audio/wav')
     countdownSound.appendChild(countdownSource)
     countdownSound.play()
     setTimeout(function(){
